@@ -23,6 +23,9 @@ class Pizza extends Model
     public function getPrice()
     {
         $totalPrice = $this->ingredients->sum('price');
-        return $totalPrice + ($totalPrice * self::COOKING_FEE);
+        $cookingFee = $totalPrice * self::COOKING_FEE;
+        $totalPriceWithFee = $totalPrice + $cookingFee;
+        $totalPriceWithFee = round($totalPriceWithFee, 2);
+        return $totalPriceWithFee;
     }
 }

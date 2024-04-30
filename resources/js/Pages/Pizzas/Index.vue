@@ -25,10 +25,11 @@ import { Head, Link } from '@inertiajs/inertia-vue3';
 import AppLayout from '@/Layouts/AppLayout.vue';
 import PizzaCard from '@/Components/PizzaCard.vue';
 import PizzaModal from '@/Components/PizzaModal.vue';
-defineProps({
+
+const props = defineProps({
     pizzas: Array,
     allIngredients: Array,
-})
+});
 
 const showModal = ref(false);
 const selectedPizza = ref(null);

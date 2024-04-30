@@ -20,7 +20,7 @@ class PizzaTest extends TestCase
     public function test_get_price_when_has_ingredients(): void
     {
         $pizza = Pizza::factory()->withIngredients()->create();
-        $expectedPrice = $pizza->ingredients->sum('price') * 1.5;
+        $expectedPrice = round($pizza->ingredients->sum('price') * 1.5, 2);
         $this->assertEquals($expectedPrice, $pizza->getPrice());
     }
 
