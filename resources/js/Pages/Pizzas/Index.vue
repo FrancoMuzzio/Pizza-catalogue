@@ -15,9 +15,9 @@ defineProps({
             </h2>
         </template>
 
-        <div class="py-12">
+        <div >
             <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
-                <div class="bg-white overflow-hidden shadow-xl sm:rounded-lg">
+                <div class="mt-16 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 gap-4 p-4">
                     <div v-for="pizza in pizzas" :key="pizza.id">
                         <PizzaCard :pizza="pizza" />
                     </div>
