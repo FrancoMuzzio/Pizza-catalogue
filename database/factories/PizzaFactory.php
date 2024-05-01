@@ -11,11 +11,7 @@ use Illuminate\Database\Eloquent\Factories\Factory;
 class PizzaFactory extends Factory
 {
     protected $model = Pizza::class;
-    /**
-     * Define the model's default state.
-     *
-     * @return array<string, mixed>
-     */
+ 
     public function definition(): array
     {
         return [

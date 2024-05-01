@@ -1,6 +1,7 @@
 <?php
 
 namespace Tests\Feature;
+
 use App\Models\Pizza;
 use App\Models\Ingredient;
 use Tests\TestCase;
@@ -47,45 +48,57 @@ class PizzaControllerTest  extends TestCase
         });
     }
 
-    public function test_order_with_complete_pizza()
+    public function test_order_pizza_successfully()
     {
         $pizza = Pizza::factory()->withIngredients()->create();
-        $data = [
-            'pizza' => $pizza->name,
-            'ingredients' => $pizza->ingredients->pluck('name')->toArray()
-        ];
-        $response = $this->post(route('pizzas.order'), $data);
-        $response->assertStatus(200);
-        $response->assertJson([
+        $originalIngredients = $pizza->ingredients->pluck('name')->toArray();
+        $response = $this->post(route('pizzas.order'), [
             'pizzaName' => $pizza->name,
-            'originalIngredients' => $pizza->ingredients->pluck('name')->toArray(),
-            'extraIngredients' => [],
-            'removedIngredients' => [],
-            'price' => $pizza->getPrice(),
+            'ingredients' => $originalIngredients,
         ]);
+        $jsonResponse = json_decode($response->getContent(), true);
+        $response->assertStatus(200)
+            ->assertJson([
+                'pizzaName' => $pizza->name,
+                'price' => $pizza->getPrice()
+            ]);
+        $this->assertSame(array_diff($originalIngredients, $jsonResponse['originalIngredients']), array_diff($jsonResponse['originalIngredients'], $originalIngredients));
+        $this->assertSame($jsonResponse['extraIngredients'], []);
+        $this->assertSame($jsonResponse['removedIngredients'], []);
     }
 
+    public function test_order_pizza_not_found()
+    {
+        $response = $this->post(route('pizzas.order'), [
+            'pizzaName' => 'Imaginary pizza',
+            'ingredients' => ['Imaginary ingredient 1', 'Imaginary ingredient 2'],
+        ]);
 
-    public function test_order_with_modified_pizza()
+        $response->assertStatus(404)
+            ->assertJson(['error' => 'Pizza not found']);
+    }
+
+    public function test_order_pizza_with_extra_and_removed_ingredients()
     {
         $pizza = Pizza::factory()->withIngredients()->create();
-        $pizzaOriginalIngredients = $pizza->ingredients;
-        $randomIngredient = $pizzaOriginalIngredients->random();
+        $originalIngredients = $pizza->ingredients->pluck('name')->toArray();
+        $ingredientToRemove = $originalIngredients[array_rand($originalIngredients)];
+        $remainingIngredients = array_diff($originalIngredients, [$ingredientToRemove]);
         $extraIngredient = Ingredient::factory()->create();
-        $pizza->ingredients()->detach($randomIngredient);
-        $pizza->ingredients()->attach($extraIngredient);
-        $data = [
-            'pizza' => $pizza->name,
-            'ingredients' => $pizza->ingredients->pluck('name')->toArray()
-        ];
-        $response = $this->post(route('pizzas.order'), $data);
-        $response->assertStatus(200);
-        $response->assertJson([
+        $orderedIngredients = array_merge($remainingIngredients, [$extraIngredient->name]);
+        $response = $this->post(route('pizzas.order'), [
             'pizzaName' => $pizza->name,
-            'originalIngredients' => $pizzaOriginalIngredients->pluck('name')->toArray(),
-            'extraIngredients' => [$extraIngredient->name],
-            'removedIngredients' => [$randomIngredient->name],
-            'price' => $pizza->getPrice(),
+            'ingredients' => $orderedIngredients,
         ]);
+        $finalPrice = $pizza->setRelation('ingredients', Ingredient::whereIn('name', $orderedIngredients)->get())->getPrice();
+        $jsonResponse = json_decode($response->getContent(), true);
+        $response->assertStatus(200)
+            ->assertJson([
+                'pizzaName' => $pizza->name,
+                'price' => $finalPrice
+            ]);
+        $this->assertSame(array_diff($originalIngredients, $jsonResponse['originalIngredients']), array_diff($jsonResponse['originalIngredients'], $originalIngredients));
+        $this->assertSame([$extraIngredient->name], $jsonResponse['extraIngredients']);
+        $this->assertSame([$ingredientToRemove], $jsonResponse['removedIngredients']);
     }
 }

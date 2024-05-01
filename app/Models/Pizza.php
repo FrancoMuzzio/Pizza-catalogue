@@ -28,4 +28,9 @@ class Pizza extends Model
         $totalPriceWithFee = round($totalPriceWithFee, 2);
         return $totalPriceWithFee;
     }
+
+    public static function findByName($name)
+    {
+        return self::with('ingredients')->where('name', $name)->first();
+    }
 }

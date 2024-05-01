@@ -23,23 +23,48 @@ class PizzaController extends Controller
 
     public function order(Request $request)
     {
-        $pizzaName = $request->input('pizza');
-        $orderIngredientNames = $request->input('ingredients');
-        $orderedPizza = Pizza::where('name', $pizzaName)->with('ingredients')->first();
-        $originalIngredients = $orderedPizza->ingredients->pluck('name')->toArray();
-        $removedIngredients = array_diff($originalIngredients, $orderIngredientNames);
-        $extraIngredients = array_diff($orderIngredientNames, $originalIngredients);
-        $pizzaToCalculate = new Pizza();
-        $pizzaToCalculate->setRelation('ingredients', $orderedPizza->ingredients);
-        $finalPrice = $pizzaToCalculate->getPrice();
+        $pizzaName = $request->input('pizzaName');
+        $orderedIngredients = $request->input('ingredients');
+        $pizza = Pizza::findByName($pizzaName);
+        if (!$pizza) {
+            return response()->json(['error' => 'Pizza not found'], 404);
+        }
+        list($extraIngredients, $removedIngredients) = $this->findIngredientDifferences($pizza, $orderedIngredients);
+        $finalIngredients = $this->getFinalIngredients($extraIngredients, $removedIngredients, $pizza);
+        $originalIngredients = $pizza->ingredients->pluck('name')->toArray();
+        $finalPrice = $this->calculateFinalPrice($pizza, $finalIngredients);
+        return $this->formatOrderResponse($pizzaName, $originalIngredients, $extraIngredients, $removedIngredients, $finalPrice);
+    }
 
+    private function findIngredientDifferences($pizza, $orderedIngredients)
+    {
+        $originalIngredients = $pizza->ingredients->pluck('name')->toArray();
+        $extraIngredients = array_diff($orderedIngredients, $originalIngredients);
+        $removedIngredients = array_diff($originalIngredients, $orderedIngredients);
+        return [$extraIngredients, $removedIngredients];
+    }
+
+    private function getFinalIngredients($extraIngredients, $removedIngredients, $pizza)
+    {
+        $originalIngredients = $pizza->ingredients->pluck('name')->toArray();
+        $finalIngredientsNames = array_unique(array_merge(array_diff($originalIngredients, $removedIngredients), $extraIngredients));
+        return Ingredient::whereIn('name', $finalIngredientsNames)->get();
+    }
+
+    private function calculateFinalPrice(Pizza $pizza, $finalIngredients)
+    {
+        $pizza->setRelation('ingredients', $finalIngredients);
+        return $pizza->getPrice();
+    }
+
+    private function formatOrderResponse($pizzaName, $originalIngredients, $extraIngredients, $removedIngredients, $finalPrice)
+    {
         return response()->json([
             'pizzaName' => $pizzaName,
             'originalIngredients' => $originalIngredients,
-            'extraIngredients' => $extraIngredients,
-            'removedIngredients' => $removedIngredients,
+            'extraIngredients' => array_values($extraIngredients),
+            'removedIngredients' => array_values($removedIngredients),
             'price' => $finalPrice,
         ]);
     }
-
 }
