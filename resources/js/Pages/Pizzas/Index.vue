@@ -49,6 +49,7 @@ const togglePizzaModal = (pizza) => {
 
 const orderSuccess = (data) => {
     orderModalTitle.value = 'Order Success';
+    const pizzaName = `<p class="font-bold text-lg mb-2">${data.pizzaName}</p>`;
     const ingredients = data.originalIngredients.map(ingredient => {
         let style = '';
         if (data.removedIngredients.includes(ingredient)) {
@@ -61,7 +62,8 @@ const orderSuccess = (data) => {
             ingredients.push(`<li style="color: green;">${extraIngredient}</li>`);
         }
     });
-    orderModalMessage.value = `<ul class="list-disc">${ingredients.join('')}</ul>`;
+    const finalPrice = `<p class="font-bold text-right mt-2">Final Price: $${data.price}</p>`;
+    orderModalMessage.value = `<div>${pizzaName}<div><ul class="max-h-32 overflow-y-scroll">${ingredients.join('')}</ul></div>${finalPrice}</div>`;
     showOrderModal.value = true;
 };
 

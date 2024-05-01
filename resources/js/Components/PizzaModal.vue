@@ -8,19 +8,16 @@
                         <img :src="imageUrl" :alt="pizza.name" class="mx-auto h-24 w-24 rounded-full">
                     </div>
                     <div class="mt-4">
-                        <div class="max-h-60 overflow-y-auto">
-                            <ul
-                                class="divide-y divide-gray-200 scrollbar-thin scrollbar-thumb-gray-400 scrollbar-track-gray-100">
-                                <template v-for="ingredient in sortedIngredients" :key="ingredient.id">
-                                    <li class="flex text-center py-2 mx-2">
-                                        <Checkbox :checked="pizzaHasIngredient(ingredient)" :value="ingredient.name"
-                                            @update:checked="toggleIngredient(ingredient)">
-                                        </Checkbox>
-                                        <span class="ml-3">{{ ingredient.name }}</span>
-                                    </li>
-                                </template>
-                            </ul>
-                        </div>
+                        <ul class="max-h-60 overflow-y-auto">
+                            <template v-for="ingredient in sortedIngredients" :key="ingredient.id">
+                                <li class="flex text-center py-2 mx-2">
+                                    <Checkbox :checked="pizzaHasIngredient(ingredient)" :value="ingredient.name"
+                                        @update:checked="toggleIngredient(ingredient)">
+                                    </Checkbox>
+                                    <span class="ml-3">{{ ingredient.name }}</span>
+                                </li>
+                            </template>
+                        </ul>
                     </div>
                 </div>
             </div>
