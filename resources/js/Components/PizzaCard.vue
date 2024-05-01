@@ -19,7 +19,6 @@
 
 <script setup>
 import { defineProps, computed } from 'vue';
-import axios from 'axios';
 
 const props = defineProps({
   pizza: Object,
@@ -29,29 +28,6 @@ const props = defineProps({
 const toogleModal = () => {
   props.toggleModal(props.pizza);
 };
-
-const postOrder = async () => {
-    try {
-        const response = await axios.post('/ruta-a-tu-controlador', {
-            pizza: props.pizza,
-            ingredients: editableIngredients.value.map(ing => ing.name),
-        });
-        alert(`Order success: ${response.data.message}`);
-        // Aquí puedes optar por cerrar el modal después de un éxito
-        // toggleModal(); // Descomenta esta línea si quieres cerrar el modal automáticamente
-    } catch (error) {
-        if (error.response) {
-            // La petición fue hecha y el servidor respondió con un código de estado
-            // que cae fuera del rango de 2xx
-            console.error('Error response:', error.response.data);
-            alert(`Order error: ${error.response.data.error}`);
-        } else {
-            // Algo sucedió en la configuración de la solicitud que provocó un Error
-            console.error('Error message:', error.message);
-        }
-    }
-};
-
 
 const joinIngredients = (ingredients) => {
   const last = ingredients.slice(-1)[0];

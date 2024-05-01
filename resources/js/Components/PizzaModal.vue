@@ -25,7 +25,7 @@
                 </div>
             </div>
             <div class="mt-6 text-center">
-                <button @click="toggleModal"
+                <button @click="postOrder"
                     class="mx-2 px-4 py-2 mb-2 bg-green-500 text-white text-base font-medium rounded-md shadow-sm hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-300">Order:
                     ${{ orderPrice }}</button>
                 <button @click="toggleModal"
@@ -39,12 +39,15 @@
 <script setup>
 import { computed, defineProps, ref, watchEffect } from 'vue';
 import Checkbox from '@/Components/Checkbox.vue';
+import axios from 'axios';
 
 const props = defineProps({
     pizza: Object,
     show: Boolean,
     toggleModal: Function,
-    allIngredients: Array
+    allIngredients: Array,
+    handleOrderSuccess: Function,
+    handleOrdererror: Function,
 });
 
 const editableIngredients = ref([]);
@@ -94,6 +97,25 @@ const toggleIngredient = (ingredient) => {
         editableIngredients.value.splice(index, 1);
     } else {
         editableIngredients.value.push(ingredient);
+    }
+};
+
+const postOrder = async () => {
+    try {
+        const response = await axios.post('/', {
+            pizzaName: props.pizza.name,
+            ingredients: editableIngredients.value.map(ing => ing.name),
+        });
+        props.handleOrderSuccess(response.data);
+
+    } catch (error) {
+        if (error.response) {
+            props.handleOrderError(error.response.data.error);
+        } else {
+            console.error('Error message:', error.message);
+        }
+    } finally {
+        toggleModal();
     }
 };
 </script>

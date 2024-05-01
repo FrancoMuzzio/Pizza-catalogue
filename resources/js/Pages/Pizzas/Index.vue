@@ -6,14 +6,18 @@
             </h2>
         </template>
 
-        <div >
+        <div>
             <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
                 <div class="mt-16 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 gap-4 p-4">
                     <div v-for="pizza in pizzas" :key="pizza.id">
-                        <PizzaCard :pizza="pizza" :toggleModal="toggleModal" />
+                        <PizzaCard :pizza="pizza" :toggleModal="togglePizzaModal" />
                     </div>
                 </div>
-                <PizzaModal :pizza="selectedPizza" :allIngredients="allIngredients" :show="showModal" :toggleModal="toggleModal"/>
+                <PizzaModal :pizza="selectedPizza" :allIngredients="allIngredients" :show="showPizzaModal"
+                    :toggleModal="togglePizzaModal" :handleOrderSuccess="orderSuccess" :handleOrderError="orderError" />
+
+                <OrderModal :show="showOrderModal" :title="orderModalTitle" :message="orderModalMessage" />
+
             </div>
         </div>
     </AppLayout>
@@ -25,18 +29,47 @@ import { Head, Link } from '@inertiajs/inertia-vue3';
 import AppLayout from '@/Layouts/AppLayout.vue';
 import PizzaCard from '@/Components/PizzaCard.vue';
 import PizzaModal from '@/Components/PizzaModal.vue';
+import OrderModal from '@/Components/OrderModal.vue';
 
 const props = defineProps({
     pizzas: Array,
     allIngredients: Array,
 });
 
-const showModal = ref(false);
+const showPizzaModal = ref(false);
+const showOrderModal = ref(false);
 const selectedPizza = ref(null);
+const orderModalTitle = ref('');
+const orderModalMessage = ref('');
 
-const toggleModal = (pizza) => {
+const togglePizzaModal = (pizza) => {
     selectedPizza.value = pizza;
-    showModal.value = !showModal.value;
+    showPizzaModal.value = !showPizzaModal.value;
+};
+
+const orderSuccess = (data) => {
+    orderModalTitle.value = 'Order Success';
+    const ingredients = data.originalIngredients.map(ingredient => {
+        let style = '';
+        if (data.removedIngredients.includes(ingredient)) {
+            style += 'text-decoration: line-through; color: red;';
+        }
+        return `<li style="${style}">${ingredient}</li>`;
+    });
+    data.extraIngredients.forEach(extraIngredient => {
+        if (!data.originalIngredients.includes(extraIngredient)) {
+            ingredients.push(`<li style="color: green;">${extraIngredient}</li>`);
+        }
+    });
+    orderModalMessage.value = `<ul class="list-disc">${ingredients.join('')}</ul>`;
+    showOrderModal.value = true;
+};
+
+const orderError = (errorMessage) => {
+    console.log('entro error');
+    orderModalTitle.value = 'Order Error';
+    orderModalMessage.value = errorMessage;
+    showOrderModal.value = true;
 };
 
 </script>
