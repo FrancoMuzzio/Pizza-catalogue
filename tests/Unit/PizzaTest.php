@@ -30,4 +30,19 @@ class PizzaTest extends TestCase
 
         $this->assertEquals(0, $pizza->getPrice());
     }
+
+    public function test_find_by_name_returns_pizza()
+    {
+        $pizzaName = 'Pizza to find';
+        Pizza::factory()->withIngredients()->create(['name' => $pizzaName]);
+        $foundPizza = Pizza::findByName($pizzaName);
+        $this->assertNotNull($foundPizza);
+        $this->assertEquals($pizzaName, $foundPizza->name);
+    }
+
+    public function test_find_by_name_returns_null_if_pizza_does_not_exist()
+    {
+        $foundPizza = Pizza::findByName('Imaginary pizza');
+        $this->assertNull($foundPizza);
+    }
 }
