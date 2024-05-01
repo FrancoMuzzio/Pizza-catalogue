@@ -63,7 +63,7 @@ const orderSuccess = (data) => {
         }
     });
     const finalPrice = `<p class="font-bold text-right mt-2">Final Price: $${data.price}</p>`;
-    orderModalMessage.value = `<div>${pizzaName}<div><ul class="max-h-32 overflow-y-scroll">${ingredients.join('')}</ul></div>${finalPrice}</div>`;
+    orderModalMessage.value = `<div>${pizzaName}<div><ul class="max-h-48 overflow-y-scroll">${ingredients.join('')}</ul></div>${finalPrice}</div>`;
     showOrderModal.value = true;
 };
 

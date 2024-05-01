@@ -27,7 +27,7 @@ class PizzaController extends Controller
         $orderedIngredients = $request->input('ingredients');
         $pizza = Pizza::findByName($pizzaName);
         if (!$pizza) {
-            return response()->json(['error' => 'Pizza not found'], 404);
+            return response()->json(['error' => 'Pizza not found.'], 404);
         }
         list($extraIngredients, $removedIngredients) = $this->findIngredientDifferences($pizza, $orderedIngredients);
         $finalIngredients = $this->getFinalIngredients($extraIngredients, $removedIngredients, $pizza);

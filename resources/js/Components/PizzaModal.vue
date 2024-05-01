@@ -44,7 +44,7 @@ const props = defineProps({
     toggleModal: Function,
     allIngredients: Array,
     handleOrderSuccess: Function,
-    handleOrdererror: Function,
+    handleOrderError: Function,
 });
 
 const editableIngredients = ref([]);
